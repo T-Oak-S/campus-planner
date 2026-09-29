@@ -1,0 +1,13 @@
+{
+  "name": "校园时序",
+  "short_name": "校园时序",
+  "description": "课程、安排和任务一体的个人时间管理工具",
+  "start_url": "/campus-planner/",
+  "scope": "/campus-planner/",
+  "display": "standalone",
+  "background_color": "#f5f4fb",
+  "theme_color": "#5146c8",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
