@@ -40,27 +40,37 @@ export function CalendarPage({ week, onWeekChange, courses, activities, onAddAct
             </div>
           })}
         </section>
-      ) : <MonthView anchor={range.start} courses={courses} activities={activities} onAddActivity={onAddActivity} />}
+      ) : <MonthView anchor={range.start} courses={courses} activities={activities} onAddActivity={onAddActivity} onEditActivity={onEditActivity} onEditCourse={onEditCourse} />}
       <div className="calendar-legend"><span><i className="legend-course" />课程</span><span><i className="legend-activity" />个人安排</span><small>点击卡片可调整单次课程或安排</small></div>
     </div>
   )
 }
 
-function MonthView({ anchor, courses, activities, onAddActivity }: {
+function MonthView({ anchor, courses, activities, onAddActivity, onEditActivity, onEditCourse }: {
   anchor: string
   courses: CourseOccurrence[]
   activities: ActivityOccurrence[]
   onAddActivity: (date?: string) => void
+  onEditActivity: (activity: ActivityOccurrence) => void
+  onEditCourse: (course: CourseOccurrence) => void
 }) {
+  const [selectedDate, setSelectedDate] = useState(anchor)
   const monthStart = `${anchor.slice(0, 7)}-01`
   const weekday = new Date(`${monthStart}T12:00:00+08:00`).getDay() || 7
   const gridStart = addDays(monthStart, -(weekday - 1))
   const days = datesOfRange(gridStart, 42)
-  return <section className="month-board">
-    {weekdayLabels.map((label) => <span className="month-weekday" key={label}>{label}</span>)}
-    {days.map((date) => {
-      const count = courses.filter((item) => item.date === date).length + activities.filter((item) => item.date === date).length
-      return <button type="button" key={date} className={`month-day ${date.slice(0, 7) !== anchor.slice(0, 7) ? 'outside' : ''}`} onClick={() => onAddActivity(date)}><strong>{Number(date.slice(8))}</strong>{count > 0 && <span>{count} 项</span>}</button>
-    })}
-  </section>
+  const selectedCourses = courses.filter((item) => item.date === selectedDate)
+  const selectedActivities = activities.filter((item) => item.date === selectedDate)
+  return <div className="month-layout"><section className="month-board" aria-label={`${anchor.slice(0, 7)} 月视图`}>
+      {weekdayLabels.map((label) => <span className="month-weekday" key={label}>{label}</span>)}
+      {days.map((date) => {
+        const count = courses.filter((item) => item.date === date).length + activities.filter((item) => item.date === date).length
+        return <button type="button" aria-label={`${date}，${count} 项安排`} key={date} className={`month-day ${date.slice(0, 7) !== anchor.slice(0, 7) ? 'outside' : ''} ${selectedDate === date ? 'selected' : ''}`} onClick={() => setSelectedDate(date)}><strong>{Number(date.slice(8))}</strong>{count > 0 && <span>{count} 项</span>}</button>
+      })}
+    </section>
+    <section className="panel month-day-details"><div className="panel-heading"><div><span className="eyebrow">所选日期</span><h2>{selectedDate}</h2></div><button type="button" className="secondary-button" onClick={() => onAddActivity(selectedDate)}><Plus size={16} />添加</button></div>
+      {!selectedCourses.length && !selectedActivities.length && <p className="soft-empty">这一天没有安排。</p>}
+      {[...selectedCourses.map((item) => ({ id: item.id, title: item.courseName, detail: `第 ${item.startPeriod}–${item.endPeriod} 节`, onClick: () => onEditCourse(item) })), ...selectedActivities.map((item) => ({ id: item.occurrenceId, title: item.title, detail: `${item.start}–${item.end}`, onClick: () => onEditActivity(item) }))].map((item) => <button type="button" className="month-detail-item" key={item.id} onClick={item.onClick}><strong>{item.title}</strong><span>{item.detail}</span></button>)}
+    </section>
+  </div>
 }

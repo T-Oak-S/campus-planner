@@ -25,6 +25,7 @@ export interface CourseOccurrence extends CourseRule {
   teachingWeek: number
   kind: 'regular' | 'makeup'
   exceptionLabel?: string
+  note?: string
 }
 
 export interface CourseOverride {

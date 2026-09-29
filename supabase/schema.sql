@@ -41,6 +41,9 @@ begin
     raise exception 'Authentication required';
   end if;
 
+  -- A per-user transaction lock also serializes the very first insert, when no row exists yet.
+  perform pg_advisory_xact_lock(hashtextextended(auth.uid()::text, 0));
+
   select p.data, p.updated_at
   into current_data, current_updated_at
   from public.planner_profiles p

@@ -1,14 +1,18 @@
 import { ArrowRight, CalendarClock, CheckCircle2, Clock3, MapPin, Plus, Sparkles } from 'lucide-react'
 import type { FreeSlot } from '../domain/activities'
 import type { ActivityOccurrence, CourseOccurrence, PlannerTask } from '../domain/types'
+import type { PeriodTime } from '../domain/types'
 import { formatChineseDate, formatDateTime } from '../ui/date'
+import { buildTodaySummary } from '../domain/today'
 
-export function TodayPage({ date, teachingWeek, courses, activities, tasks, freeSlots, periodsConfigured, onAddActivity, onOpenCalendar, onOpenTasks, onEditActivity }: {
+export function TodayPage({ date, teachingWeek, courses, activities, tasks, periods, nowLocal, freeSlots, periodsConfigured, onAddActivity, onOpenCalendar, onOpenTasks, onEditActivity }: {
   date: string
   teachingWeek: number
   courses: CourseOccurrence[]
   activities: ActivityOccurrence[]
   tasks: PlannerTask[]
+  periods: PeriodTime[]
+  nowLocal: string
   freeSlots: FreeSlot[]
   periodsConfigured: boolean
   onAddActivity: () => void
@@ -16,20 +20,7 @@ export function TodayPage({ date, teachingWeek, courses, activities, tasks, free
   onOpenTasks: () => void
   onEditActivity: (activity: ActivityOccurrence) => void
 }) {
-  const timeline = [
-    ...courses.map((course) => ({
-      id: course.id, kind: 'course' as const, sort: course.startPeriod,
-      title: course.courseName, time: `第 ${course.startPeriod}–${course.endPeriod} 节`,
-      detail: `${course.teacher} · ${course.location}`, color: course.color, course,
-    })),
-    ...activities.map((activity) => ({
-      id: activity.occurrenceId, kind: 'activity' as const, sort: 100 + Number(activity.start.replace(':', '.')),
-      title: activity.title, time: `${activity.start}–${activity.end}`,
-      detail: activity.location || '个人安排', color: '#6d5ce7', activity,
-    })),
-  ].sort((a, b) => a.sort - b.sort)
-  const next = timeline[0]
-  const pending = tasks.filter((task) => !task.completed).slice(0, 3)
+  const { timeline, next, pending } = buildTodaySummary(courses, activities, tasks, periods, nowLocal)
 
   return (
     <div className="page page-today">
@@ -58,7 +49,7 @@ export function TodayPage({ date, teachingWeek, courses, activities, tasks, free
           <div className="timeline">
             {timeline.length === 0 && <div className="empty-state"><span>☁</span><strong>今天很清爽</strong><p>添加一个安排，给空闲时间一个方向。</p></div>}
             {timeline.map((item) => (
-              <button type="button" key={item.id} className="timeline-item" style={{ '--item-color': item.color } as React.CSSProperties} onClick={() => item.kind === 'activity' && onEditActivity(item.activity)}>
+              <button type="button" key={item.id} className="timeline-item" style={{ '--item-color': item.color } as React.CSSProperties} onClick={() => item.activity && onEditActivity(item.activity)}>
                 <span className="timeline-time">{item.time}</span><span className="timeline-line"><i /></span>
                 <span className="timeline-content"><strong>{item.title}</strong><small><MapPin size={13} />{item.detail}</small></span>
               </button>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AlertTriangle, MapPin, Repeat2 } from 'lucide-react'
 import { detectConflicts, validateActivity, type TimedBlock } from '../domain/activities'
+import { addDays } from '../domain/calendar'
 import type { Activity } from '../domain/types'
 
 export interface ActivityDraft {
@@ -13,6 +14,7 @@ export interface ActivityDraft {
   recurrence: 'none' | 'weekly'
   recurrenceEnd?: string
   editScope: 'series' | 'occurrence'
+  dateChanged?: boolean
 }
 
 interface ActivityFormProps {
@@ -36,17 +38,25 @@ export function ActivityForm({ initialDate, activity, occurrenceDate, occupied, 
     recurrence: activity?.recurrence ?? 'none',
     recurrenceEnd: activity?.recurrenceEnd ?? '',
     editScope: activity?.recurrence === 'weekly' ? 'occurrence' : 'series',
+    dateChanged: false,
   })
   const [error, setError] = useState('')
   const [confirmConflicts, setConfirmConflicts] = useState(false)
 
   const conflicts = useMemo(() => {
     if (!draft.date || !draft.start || !draft.end || draft.end <= draft.start) return []
-    return detectConflicts({
-      id: activity?.id ?? 'new-activity', title: draft.title,
-      startAt: `${draft.date}T${draft.start}`, endAt: `${draft.date}T${draft.end}`,
-    }, occupied.filter((block) => block.id !== activity?.id))
-  }, [activity?.id, draft.date, draft.end, draft.start, draft.title, occupied])
+    const dates: string[] = []
+    const lastDate = draft.recurrence === 'weekly' && draft.recurrenceEnd ? draft.recurrenceEnd : draft.date
+    for (let date = draft.date; date <= lastDate; date = addDays(date, 7)) dates.push(date)
+    const unique = new Map<string, TimedBlock>()
+    for (const date of dates) {
+      for (const conflict of detectConflicts({
+        id: activity?.id ?? 'new-activity', title: draft.title,
+        startAt: `${date}T${draft.start}`, endAt: `${date}T${draft.end}`,
+      }, occupied.filter((block) => block.id !== activity?.id))) unique.set(conflict.id, conflict)
+    }
+    return [...unique.values()]
+  }, [activity?.id, draft.date, draft.end, draft.recurrence, draft.recurrenceEnd, draft.start, draft.title, occupied])
 
   function submit() {
     try {
@@ -77,7 +87,7 @@ export function ActivityForm({ initialDate, activity, occurrenceDate, occupied, 
       )}
       <label className="field full"><span>安排名称</span><input autoFocus value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder="例如：图书馆自习" /></label>
       <div className="form-grid">
-        <label className="field"><span>日期</span><input type="date" value={draft.date} onChange={(event) => setDraft({ ...draft, date: event.target.value })} /></label>
+        <label className="field"><span>日期</span><input type="date" value={draft.date} onChange={(event) => setDraft({ ...draft, date: event.target.value, dateChanged: true })} /></label>
         <label className="field"><span><Repeat2 size={15} />重复</span><select value={draft.recurrence} onChange={(event) => setDraft({ ...draft, recurrence: event.target.value as 'none' | 'weekly' })}><option value="none">不重复</option><option value="weekly">每周</option></select></label>
         <label className="field"><span>开始时间</span><input type="time" value={draft.start} onChange={(event) => setDraft({ ...draft, start: event.target.value })} /></label>
         <label className="field"><span>结束时间</span><input type="time" value={draft.end} onChange={(event) => setDraft({ ...draft, end: event.target.value })} /></label>

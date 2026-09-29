@@ -95,6 +95,7 @@ export function expandCourseOccurrences(
               endPeriod: override.endPeriod ?? rule.endPeriod,
               teacher: override.teacher ?? rule.teacher,
               location: override.location ?? rule.location,
+              note: override.note,
             }
           : {}),
         id,

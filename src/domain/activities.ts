@@ -15,6 +15,13 @@ export interface FreeSlot {
 }
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+export function isValidDate(value: string): boolean {
+  if (!DATE_PATTERN.test(value)) return false
+  const date = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+}
 
 function minutes(time: string): number {
   const match = TIME_PATTERN.exec(time)
@@ -28,12 +35,14 @@ function timeFromMinutes(value: number): string {
 
 export function validateActivity(activity: Activity): Activity {
   if (!activity.title.trim()) throw new Error('安排名称不能为空')
+  if (!isValidDate(activity.date)) throw new Error('安排日期无效')
   if (minutes(activity.end) <= minutes(activity.start)) {
     throw new Error('结束时间必须晚于开始时间')
   }
   if (activity.recurrence === 'weekly' && (!activity.recurrenceEnd || activity.recurrenceEnd < activity.date)) {
     throw new Error('重复结束日期无效')
   }
+  if (activity.recurrenceEnd && !isValidDate(activity.recurrenceEnd)) throw new Error('重复结束日期无效')
   return activity
 }
 
