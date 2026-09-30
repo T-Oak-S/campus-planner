@@ -12,4 +12,11 @@ describe('部署与并发保护', () => {
     const schema = readFileSync('supabase/schema.sql', 'utf8')
     expect(schema).toContain('pg_advisory_xact_lock')
   })
+
+  it('发布数据表到 Realtime 并监听首次写入与后续更新', () => {
+    const schema = readFileSync('supabase/schema.sql', 'utf8')
+    const repository = readFileSync('src/data/supabaseRepository.ts', 'utf8')
+    expect(schema).toContain('alter publication supabase_realtime add table public.planner_profiles')
+    expect(repository).toContain("event: '*'")
+  })
 })

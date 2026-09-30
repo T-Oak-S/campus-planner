@@ -92,7 +92,7 @@ export function createSupabaseRepository(client: SupabaseClient, storage: Storag
         if (!activeUserId) return
         channel
           .on('postgres_changes', {
-            event: 'UPDATE', schema: 'public', table: 'planner_profiles', filter: `user_id=eq.${activeUserId}`,
+            event: '*', schema: 'public', table: 'planner_profiles', filter: `user_id=eq.${activeUserId}`,
           }, (payload) => {
             const row = payload.new as { data?: PlannerData; updated_at?: string }
             if (row.data) {

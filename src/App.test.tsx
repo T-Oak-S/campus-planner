@@ -32,8 +32,9 @@ describe('校园时间管理界面', () => {
     await user.type(within(dialog).getByLabelText('安排名称'), '晚间自习')
     await user.type(within(dialog).getByLabelText('地点'), '图书馆')
     await user.click(within(dialog).getByRole('button', { name: '保存安排' }))
-    expect(await screen.findByText('晚间自习')).toBeInTheDocument()
-    expect(screen.getByText('图书馆')).toBeInTheDocument()
+    const timelineItem = await screen.findByRole('button', { name: /晚间自习/ })
+    expect(within(timelineItem).getByText('晚间自习')).toBeInTheDocument()
+    expect(within(timelineItem).getByText('图书馆')).toBeInTheDocument()
   })
 
   it('创建任务并可以标记完成', async () => {

@@ -6,6 +6,20 @@ create table if not exists public.planner_profiles (
 
 alter table public.planner_profiles enable row level security;
 
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'planner_profiles'
+  ) then
+    alter publication supabase_realtime add table public.planner_profiles;
+  end if;
+end
+$$;
+
 create policy "Users can read their planner"
 on public.planner_profiles for select
 using (auth.uid() = user_id);
