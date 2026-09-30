@@ -75,7 +75,7 @@
 
 **Files:** Create `.github/workflows/deploy.yml`, `README.md`, and finalize application metadata.
 
-**Interfaces:** Production build deployable to `https://20080112.github.io/campus-planner/`.
+**Interfaces:** Production build deployable to `https://t-oak-s.github.io/campus-planner/`.
 
 - [ ] Add deployment workflow and setup documentation for Supabase GitHub OAuth, environment variables, Pages, calendar replacement, and backups.
 - [ ] Run tests, type-check, production build, and preview smoke checks.

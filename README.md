@@ -2,7 +2,7 @@
 
 一个为大学第一学期设计的中文个人时间管理网页，把按教学周变化的课程、个人安排和待办任务放在一起。
 
-计划发布地址：<https://20080112.github.io/campus-planner/>
+发布地址：<https://t-oak-s.github.io/campus-planner/>
 
 ## 已实现的功能
 
@@ -46,10 +46,10 @@ npm run build
 
 1. 新建一个 Supabase 项目，在 SQL Editor 中完整执行 [`supabase/schema.sql`](supabase/schema.sql)。脚本会创建数据表、每用户行级安全策略和带版本检查的保存函数。
 2. 在 GitHub 创建 OAuth App：
-   - Homepage URL：`https://20080112.github.io/campus-planner/`
+   - Homepage URL：`https://t-oak-s.github.io/campus-planner/`
    - Authorization callback URL：Supabase 控制台 GitHub Provider 页面显示的回调地址，格式为 `https://<project-ref>.supabase.co/auth/v1/callback`
 3. 在 Supabase 的 Authentication → Providers → GitHub 填入 OAuth Client ID 和 Client Secret。
-4. 在 Authentication → URL Configuration 中把 `https://20080112.github.io/campus-planner/` 加入 Redirect URLs。
+4. 在 Authentication → URL Configuration 中把 `https://t-oak-s.github.io/campus-planner/` 加入 Redirect URLs。
 5. 在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 新建：
    - `VITE_SUPABASE_URL`：Supabase Project URL
    - `VITE_SUPABASE_ANON_KEY`：Supabase public anon key
@@ -62,7 +62,7 @@ npm run build
 
 仓库的 `main` 分支每次更新都会执行 `.github/workflows/deploy.yml`：安装依赖、运行全部测试、构建，然后发布 `dist/`。
 
-首次发布时，在仓库 Settings → Pages → Build and deployment 中选择 **GitHub Actions**。工作流完成后即可访问 `https://20080112.github.io/campus-planner/`。
+首次发布时，在仓库 Settings → Pages → Build and deployment 中选择 **GitHub Actions**。工作流完成后即可访问 `https://t-oak-s.github.io/campus-planner/`。
 
 ## 日历与备份
 
