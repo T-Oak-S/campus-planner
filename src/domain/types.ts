@@ -120,7 +120,7 @@ export interface PlannerSettings {
 }
 
 export interface PlannerData {
-  version: 1
+  version: 2
   activities: Activity[]
   tasks: PlannerTask[]
   courseOverrides: CourseOverride[]

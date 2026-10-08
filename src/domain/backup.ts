@@ -1,21 +1,23 @@
 import type { Activity, PlannerData, PlannerSettings, PlannerTask } from './types'
 import { isValidDate, validateActivity } from './activities'
-import { validateCoursePeriodRange, validatePlannerSettings } from './settings'
+import { createDefaultPeriodTimes, validateCoursePeriodRange, validatePlannerSettings } from './settings'
+
+type PlannerDataPayload = Omit<PlannerData, 'version'> & { version: 1 | 2 }
 
 const DEFAULT_SETTINGS: PlannerSettings = {
   dayStart: '08:00',
   dayEnd: '22:00',
   reminderMinutes: 15,
-  periods: [],
+  periods: createDefaultPeriodTimes(),
 }
 
 export function createDefaultPlannerData(): PlannerData {
   return {
-    version: 1,
+    version: 2,
     activities: [],
     tasks: [],
     courseOverrides: [],
-    settings: { ...DEFAULT_SETTINGS, periods: [] },
+    settings: { ...DEFAULT_SETTINGS, periods: createDefaultPeriodTimes() },
     updatedAt: new Date().toISOString(),
   }
 }
@@ -103,8 +105,8 @@ function validCourseOverride(value: unknown): boolean {
   return true
 }
 
-function validPlannerData(value: unknown): value is PlannerData {
-  if (!isRecord(value) || value.version !== 1 || !isString(value.updatedAt) || !isDateTime(value.updatedAt)) return false
+function validPlannerData(value: unknown): value is PlannerDataPayload {
+  if (!isRecord(value) || (value.version !== 1 && value.version !== 2) || !isString(value.updatedAt) || !isDateTime(value.updatedAt)) return false
   if (!Array.isArray(value.activities) || !value.activities.every(validActivity)) return false
   if (!Array.isArray(value.tasks) || !value.tasks.every(validTask)) return false
   if (!Array.isArray(value.courseOverrides) || !value.courseOverrides.every(validCourseOverride)) return false
@@ -115,7 +117,13 @@ export function importBackup(payload: string): PlannerData {
   try {
     const parsed: unknown = JSON.parse(payload)
     if (!validPlannerData(parsed)) throw new Error('invalid')
-    return parsed
+    return {
+      ...parsed,
+      version: 2,
+      settings: parsed.version === 1 && parsed.settings.periods.length === 0
+        ? { ...parsed.settings, periods: createDefaultPeriodTimes() }
+        : parsed.settings,
+    }
   } catch {
     throw new Error('备份文件无效，请选择由本工具导出的 JSON 文件')
   }

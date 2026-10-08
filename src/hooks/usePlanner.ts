@@ -122,7 +122,7 @@ export function usePlanner(repository: PlannerRepository) {
       setSaveMessage('当前离线，云端数据仅可查看')
       return Promise.resolve({ status: 'error', message: '当前离线，云端数据仅可查看', retryable: true })
     }
-    const next = { ...updater(current), version: 1 as const, updatedAt: nextUpdatedAt(current.updatedAt) }
+    const next = { ...updater(current), version: 2 as const, updatedAt: nextUpdatedAt(current.updatedAt) }
     replaceData(next)
     return enqueueSave(next)
   }, [enqueueSave, replaceData, repository.mode])

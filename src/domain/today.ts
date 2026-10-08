@@ -21,16 +21,21 @@ export function buildTodaySummary(
 ) {
   const periodMap = new Map(periods.map((period) => [period.period, period]))
   const timeline: TodayTimelineItem[] = [
-    ...courses.map((course) => ({
-      id: course.id,
-      kind: 'course' as const,
-      title: course.courseName,
-      time: `第 ${course.startPeriod}–${course.endPeriod} 节`,
-      detail: `${course.teacher} · ${course.location}`,
-      color: course.color,
-      start: periodMap.get(course.startPeriod)?.start,
-      end: periodMap.get(course.endPeriod)?.end,
-    })),
+    ...courses.map((course) => {
+      const start = periodMap.get(course.startPeriod)?.start
+      const end = periodMap.get(course.endPeriod)?.end
+      const periodLabel = `第 ${course.startPeriod}–${course.endPeriod} 节`
+      return {
+        id: course.id,
+        kind: 'course' as const,
+        title: course.courseName,
+        time: start && end ? `${start}–${end}` : periodLabel,
+        detail: [periodLabel, course.teacher, course.location].filter(Boolean).join(' · '),
+        color: course.color,
+        start,
+        end,
+      }
+    }),
     ...activities.map((activity) => ({
       id: activity.occurrenceId,
       kind: 'activity' as const,

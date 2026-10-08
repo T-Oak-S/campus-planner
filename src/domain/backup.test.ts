@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultPlannerData, exportBackup, importBackup } from './backup'
+import { createDefaultPeriodTimes } from './settings'
 
 describe('数据备份', () => {
   it('导出的数据可以完整恢复', () => {
@@ -16,9 +17,18 @@ describe('数据备份', () => {
     expect(importBackup(exportBackup(data))).toEqual(data)
   })
 
+  it('把旧版空作息数据迁移为学校默认作息', () => {
+    const legacy = createDefaultPlannerData() as unknown as Record<string, unknown>
+    legacy.version = 1
+    legacy.settings = { dayStart: '08:00', dayEnd: '22:00', reminderMinutes: 15, periods: [] }
+    const migrated = importBackup(JSON.stringify(legacy))
+    expect(migrated.version).toBe(2)
+    expect(migrated.settings.periods).toEqual(createDefaultPeriodTimes())
+  })
+
   it.each([
     '{}',
-    '{"version":2,"activities":[],"tasks":[],"courseOverrides":[],"settings":{},"updatedAt":"x"}',
+    '{"version":3,"activities":[],"tasks":[],"courseOverrides":[],"settings":{},"updatedAt":"x"}',
     '{"version":1,"activities":[{"id":"bad"}],"tasks":[],"courseOverrides":[],"settings":{},"updatedAt":"x"}',
   ])('拒绝缺字段、未知版本或畸形记录', (payload) => {
     expect(() => importBackup(payload)).toThrow('备份文件无效')

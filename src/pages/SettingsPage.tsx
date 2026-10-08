@@ -30,7 +30,7 @@ export function SettingsPage({ settings, repository, user, readOnly = false, onS
 
   return (
     <div className="page">
-      <header className="page-header"><div><span className="eyebrow">偏好与数据</span><h1>设置</h1><p>补全作息时间后，课程可以参与冲突检测和日历导出。</p></div></header>
+      <header className="page-header"><div><span className="eyebrow">偏好与数据</span><h1>设置</h1><p>学校作息已经预填，课程会自动参与冲突检测和日历导出。</p></div></header>
       <div className="settings-grid">
         <div className="settings-main">
           <section className="panel settings-section">
@@ -41,7 +41,7 @@ export function SettingsPage({ settings, repository, user, readOnly = false, onS
           </section>
 
           <section className="panel settings-section">
-            <div className="settings-title"><div className="settings-icon"><Save size={20} /></div><div><h2>课程作息时间</h2><p>按学校作息填写；留空的节次不会参与精确时间计算。</p></div></div>
+            <div className="settings-title"><div className="settings-icon"><Save size={20} /></div><div><h2>课程作息时间</h2><p>已按学校作息预填；如有调整，可以直接修改对应节次。</p></div></div>
             <div className="period-table"><div className="period-row header"><span>节次</span><span>开始</span><span>结束</span></div>{periods.map((period) => <div className="period-row" key={period.period}><strong>第 {period.period} 节</strong><input disabled={readOnly} aria-label={`第${period.period}节开始`} type="time" value={period.start} onChange={(event) => setPeriods(periods.map((item) => item.period === period.period ? { ...item, start: event.target.value } : item))} /><input disabled={readOnly} aria-label={`第${period.period}节结束`} type="time" value={period.end} onChange={(event) => setPeriods(periods.map((item) => item.period === period.period ? { ...item, end: event.target.value } : item))} /></div>)}</div>
             <div className="inline-settings"><label className="field"><span>每日可用时间从</span><input disabled={readOnly} type="time" value={dayStart} onChange={(event) => setDayStart(event.target.value)} /></label><label className="field"><span>到</span><input disabled={readOnly} type="time" value={dayEnd} onChange={(event) => setDayEnd(event.target.value)} /></label><label className="field"><span>默认提前提醒</span><select disabled={readOnly} value={reminderMinutes} onChange={(event) => setReminderMinutes(Number(event.target.value))}><option value={5}>5 分钟</option><option value={15}>15 分钟</option><option value={30}>30 分钟</option><option value={60}>1 小时</option></select></label></div>
             {error && <p className="form-error">{error}</p>}

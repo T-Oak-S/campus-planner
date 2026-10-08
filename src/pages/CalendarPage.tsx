@@ -1,14 +1,23 @@
 import { CalendarRange, ChevronLeft, ChevronRight, ListFilter, MapPin, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { addDays, getTeachingWeek, teachingWeekRange } from '../domain/calendar'
-import type { ActivityOccurrence, CourseOccurrence } from '../domain/types'
+import type { ActivityOccurrence, CourseOccurrence, PeriodTime } from '../domain/types'
 import { datesOfRange, formatShortDate, weekdayLabels } from '../ui/date'
 
-export function CalendarPage({ week, onWeekChange, courses, activities, onAddActivity, onEditActivity, onEditCourse }: {
+function courseTimeLabel(course: CourseOccurrence, periods: PeriodTime[]): string {
+  const periodMap = new Map(periods.map((period) => [period.period, period]))
+  const start = periodMap.get(course.startPeriod)?.start
+  const end = periodMap.get(course.endPeriod)?.end
+  const periodsLabel = `第 ${course.startPeriod}–${course.endPeriod} 节`
+  return start && end ? `${start}–${end} · ${periodsLabel}` : periodsLabel
+}
+
+export function CalendarPage({ week, onWeekChange, courses, activities, periods, onAddActivity, onEditActivity, onEditCourse }: {
   week: number
   onWeekChange: (week: number) => void
   courses: CourseOccurrence[]
   activities: ActivityOccurrence[]
+  periods: PeriodTime[]
   onAddActivity: (date?: string) => void
   onEditActivity: (activity: ActivityOccurrence) => void
   onEditCourse: (course: CourseOccurrence) => void
@@ -33,23 +42,24 @@ export function CalendarPage({ week, onWeekChange, courses, activities, onAddAct
             return <div className={`day-column ${index >= 5 ? 'weekend' : ''}`} key={date}>
               <div className="day-heading"><span>{weekdayLabels[index]}</span><strong>{date.slice(8)}</strong></div>
               <div className="day-items">
-                {dayCourses.map((course) => <button type="button" key={course.id} className="calendar-course" style={{ '--course-color': course.color } as React.CSSProperties} onClick={() => onEditCourse(course)}><span>第 {course.startPeriod}–{course.endPeriod} 节</span><strong>{course.courseName}</strong><small><MapPin size={11} />{course.location}</small>{course.kind === 'makeup' && <em>补课</em>}</button>)}
+                {dayCourses.map((course) => <button type="button" key={course.id} className="calendar-course" style={{ '--course-color': course.color } as React.CSSProperties} onClick={() => onEditCourse(course)}><span>{courseTimeLabel(course, periods)}</span><strong>{course.courseName}</strong><small><MapPin size={11} />{course.location}</small>{course.kind === 'makeup' && <em>补课</em>}</button>)}
                 {dayActivities.map((activity) => <button type="button" key={activity.occurrenceId} className="calendar-activity" onClick={() => onEditActivity(activity)}><span>{activity.start}–{activity.end}</span><strong>{activity.title}</strong><small>{activity.location || '个人安排'}</small></button>)}
                 {!dayCourses.length && !dayActivities.length && <button type="button" className="day-add" onClick={() => onAddActivity(date)}>＋</button>}
               </div>
             </div>
           })}
         </section>
-      ) : <MonthView anchor={range.start} courses={courses} activities={activities} onAddActivity={onAddActivity} onEditActivity={onEditActivity} onEditCourse={onEditCourse} />}
+      ) : <MonthView anchor={range.start} courses={courses} activities={activities} periods={periods} onAddActivity={onAddActivity} onEditActivity={onEditActivity} onEditCourse={onEditCourse} />}
       <div className="calendar-legend"><span><i className="legend-course" />课程</span><span><i className="legend-activity" />个人安排</span><small>点击卡片可调整单次课程或安排</small></div>
     </div>
   )
 }
 
-function MonthView({ anchor, courses, activities, onAddActivity, onEditActivity, onEditCourse }: {
+function MonthView({ anchor, courses, activities, periods, onAddActivity, onEditActivity, onEditCourse }: {
   anchor: string
   courses: CourseOccurrence[]
   activities: ActivityOccurrence[]
+  periods: PeriodTime[]
   onAddActivity: (date?: string) => void
   onEditActivity: (activity: ActivityOccurrence) => void
   onEditCourse: (course: CourseOccurrence) => void
@@ -70,7 +80,7 @@ function MonthView({ anchor, courses, activities, onAddActivity, onEditActivity,
     </section>
     <section className="panel month-day-details"><div className="panel-heading"><div><span className="eyebrow">所选日期</span><h2>{selectedDate}</h2></div><button type="button" className="secondary-button" onClick={() => onAddActivity(selectedDate)}><Plus size={16} />添加</button></div>
       {!selectedCourses.length && !selectedActivities.length && <p className="soft-empty">这一天没有安排。</p>}
-      {[...selectedCourses.map((item) => ({ id: item.id, title: item.courseName, detail: `第 ${item.startPeriod}–${item.endPeriod} 节`, onClick: () => onEditCourse(item) })), ...selectedActivities.map((item) => ({ id: item.occurrenceId, title: item.title, detail: `${item.start}–${item.end}`, onClick: () => onEditActivity(item) }))].map((item) => <button type="button" className="month-detail-item" key={item.id} onClick={item.onClick}><strong>{item.title}</strong><span>{item.detail}</span></button>)}
+      {[...selectedCourses.map((item) => ({ id: item.id, title: item.courseName, detail: courseTimeLabel(item, periods), onClick: () => onEditCourse(item) })), ...selectedActivities.map((item) => ({ id: item.occurrenceId, title: item.title, detail: `${item.start}–${item.end}`, onClick: () => onEditActivity(item) }))].map((item) => <button type="button" className="month-detail-item" key={item.id} onClick={item.onClick}><strong>{item.title}</strong><span>{item.detail}</span></button>)}
     </section>
   </div>
 }

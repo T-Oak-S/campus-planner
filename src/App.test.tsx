@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { createLocalRepository } from './data/localRepository'
@@ -21,6 +21,9 @@ describe('校园时间管理界面', () => {
     expect(screen.getByRole('button', { name: '日历' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '任务' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '设置' })).toBeInTheDocument()
+    const algebra = screen.getByRole('button', { name: /工科高等代数/ })
+    expect(within(algebra).getByText('08:00–09:35')).toBeInTheDocument()
+    expect(within(algebra).getByText(/第 1–2 节/)).toBeInTheDocument()
   })
 
   it('新增个人安排后出现在今天时间线', async () => {
@@ -57,6 +60,8 @@ describe('校园时间管理界面', () => {
     await screen.findByText('第 2 教学周')
     await user.click(screen.getByRole('button', { name: '日历' }))
     expect(screen.getByRole('heading', { name: '第 2 周' })).toBeInTheDocument()
+    const algebra = screen.getByRole('button', { name: /工科高等代数/ })
+    expect(within(algebra).getByText(/08:00–09:35/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '下一周' }))
     expect(screen.getByRole('heading', { name: '第 3 周' })).toBeInTheDocument()
   })
@@ -102,8 +107,7 @@ describe('校园时间管理界面', () => {
     expect(within(dialog).getByLabelText(/地点/)).toHaveValue('教室')
     await user.click(within(dialog).getByLabelText('修改整个系列'))
     await user.click(within(dialog).getByRole('button', { name: '保存安排' }))
-    await screen.findByText('已保存')
-    expect(JSON.parse(window.localStorage.getItem('campus-planner:data') ?? '{}').activities[0].date).toBe('2026-09-22')
+    await waitFor(() => expect(JSON.parse(window.localStorage.getItem('campus-planner:data') ?? '{}').activities[0].date).toBe('2026-09-22'))
   })
 
   it('设置页提供日历导出、备份和本地模式说明', async () => {

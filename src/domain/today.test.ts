@@ -12,6 +12,7 @@ describe('今日摘要', () => {
       { id: 'soon', title: '先截止', dueAt: '2026-09-30T10:00', completed: false },
     ] as PlannerTask[]
     const summary = buildTodaySummary([course], [activity], tasks, periods, '2026-09-29T10:00')
+    expect(summary.timeline[0]).toMatchObject({ time: '08:00–09:35', detail: '第 1–2 节' })
     expect(summary.next?.title).toBe('下午自习')
     expect(summary.pending.map((task) => task.id)).toEqual(['soon', 'late'])
   })

@@ -35,7 +35,7 @@ describe('本机数据仓库', () => {
   it('损坏的本机缓存不会阻止应用启动', async () => {
     window.localStorage.setItem('campus-planner:data', '{bad json')
     const result = await createLocalRepository(window.localStorage).load()
-    expect(result.version).toBe(1)
+    expect(result.version).toBe(2)
     expect(result.tasks).toEqual([])
   })
 })
